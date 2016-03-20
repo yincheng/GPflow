@@ -356,6 +356,3 @@ class GPModel(Model):
         return self.likelihood.predict_density(pred_f_mean, pred_f_var, Ynew)
 
 
-
-            
-
