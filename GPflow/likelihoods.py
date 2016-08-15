@@ -358,6 +358,8 @@ class RobustMax(object):
 
 
     """
+    _squash = 1e-6
+    
     def __init__(self, num_classes, epsilon=1e-3):
         self.epsilon = epsilon
         self.num_classes = num_classes
@@ -380,14 +382,14 @@ class RobustMax(object):
         dist = (tf.expand_dims(X, 1) - tf.expand_dims(mu, 2)) / tf.expand_dims(tf.sqrt(tf.clip_by_value(var, 1e-10, np.inf)), 2)
         cdfs = 0.5 * (1.0 + tf.erf(dist/np.sqrt(2.0)))
 
-        cdfs = cdfs * (1-2e-4) + 1e-4
+        cdfs = cdfs * (1-2*self._squash) + self._squash
 
         # blank out all the distances on the selected latent function
         oh_off = tf.cast(tf.one_hot(tf.reshape(Y, (-1,)), self.num_classes, 0., 1.), tf.float64)
         cdfs = cdfs * tf.expand_dims(oh_off, 2) + tf.expand_dims(oh_on, 2)
 
         # take the product over the latent functions, and the sum over the GH grid.
-        return tf.matmul(tf.reduce_prod(cdfs, 1), tf.reshape(gh_w/np.sqrt(np.pi), (-1, 1)))
+        return tf.matmul(tf.reduce_prod(cdfs, reduction_indices=[1]), tf.reshape(gh_w/np.sqrt(np.pi), (-1, 1)))
 
 
 class MultiClass(Likelihood):
