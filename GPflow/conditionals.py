@@ -88,8 +88,14 @@ def conditional(Xnew, X, kern, f, full_cov=False, q_sqrt=None, whiten=False):
             LTA = A * tf.expand_dims(tf.transpose(q_sqrt), 2)  # D x M x N
         elif q_sqrt.get_shape().ndims == 3:
             L = tf.batch_matrix_band_part(tf.transpose(q_sqrt, (2, 0, 1)), -1, 0)  # D x M x M
-            A_tiled = tf.tile(tf.expand_dims(A, 0), tf.pack([tf.shape(f)[1], 1, 1]))
-            LTA = tf.batch_matmul(L, A_tiled, adj_x=True)  # D x M x N
+
+            # without loops: tf takes ages to do batch_matmul
+            # A_tiled = tf.tile(tf.expand_dims(A, 0), tf.pack([tf.shape(f)[1], 1, 1]))
+            # LTA = tf.batch_matmul(L, A_tiled, adj_x=True)  # D x M x N
+
+            # with loops faster?
+            LTA = tf.pack([tf.matmul(L[i,:,:], A) for i in range(10)]) # TODO: hard coded 10!!!
+
         else:  # pragma: no cover
             raise ValueError("Bad dimension for q_sqrt: %s" %
                              str(q_sqrt.get_shape().ndims))
