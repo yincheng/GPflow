@@ -1,11 +1,11 @@
 # Copyright 2016 James Hensman, Mark van der Wilk, Valentine Svensson, alexggmatthews, fujiisoup
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ import sys
 from . import tf_hacks
 from tensorflow.python.client import timeline
 from .settings import float_type
+
 
 class ObjectiveWrapper(object):
     """
@@ -153,12 +154,12 @@ class Model(Parameterized):
             feed_dict.update(self.get_feed_dict())
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = tf.RunMetadata()
-            f,g = self._session.run([self._minusF, self._minusG],
+            f, g = self._session.run([self._minusF, self._minusG],
                                      feed_dict=feed_dict, options=run_options, run_metadata=run_metadata)
             tl = timeline.Timeline(run_metadata.step_stats)
             ctf = tl.generate_chrome_trace_format()
-            with open('timeline.json', 'w') as f:
-				f.write(ctf)
+            with open('timeline.json', 'w') as fi:
+                fi.write(ctf)
             return f.astype(np.float64), g.astype(np.float64)
 
         self._objective = obj
@@ -230,17 +231,19 @@ class Model(Parameterized):
         try:
             iteration = 0
             while iteration < maxiter:
-				run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-				run_metadata = tf.RunMetadata()
-				self._session.run(opt_step,
-                                     feed_dict=self.get_feed_dict(), options=run_options, run_metadata=run_metadata)
-				tl = timeline.Timeline(run_metadata.step_stats)
-				ctf = tl.generate_chrome_trace_format()
-				with open('timeline.json', 'w') as f:
-					f.write(ctf)
-				if callback is not None:
-					callback(self._session.run(self._free_vars))
-				iteration += 1
+                run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                run_metadata = tf.RunMetadata()
+                self._session.run(opt_step,
+                                  feed_dict=self.get_feed_dict(),
+                                  options=run_options,
+                                  run_metadata=run_metadata)
+                tl = timeline.Timeline(run_metadata.step_stats)
+                ctf = tl.generate_chrome_trace_format()
+                with open('timeline.json', 'w') as f:
+                    f.write(ctf)
+                if callback is not None:
+                    callback(self._session.run(self._free_vars))
+                iteration += 1
         except KeyboardInterrupt:
             print("Caught KeyboardInterrupt, setting model\
                   with most recent state.")
