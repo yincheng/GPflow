@@ -13,3 +13,7 @@ jitter_level = 1e-6
 [profiling]
 dump_timeline = False
 dump_tensorboard = False
+
+[tracing]
+trace = False
+filename = gpflow_trace

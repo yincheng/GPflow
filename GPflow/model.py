@@ -21,6 +21,7 @@ import tensorflow as tf
 from . import hmc, tf_wraps
 from ._settings import settings
 import sys
+import time
 float_type = settings.dtypes.float_type
 
 
@@ -31,14 +32,25 @@ class ObjectiveWrapper(object):
 
     The previously seen state is cached so that we can easily access it if the
     model crashes.
+
+    Optionally the current time and function value are written to a file, as specified in GPflowrc.
     """
 
     def __init__(self, objective):
         self._objective = objective
         self._previous_x = None
 
+        if settings.tracing.trace:
+            self.tracing = True
+            self.trace_filename = settings.tracing.filename
+
     def __call__(self, x):
         f, g = self._objective(x)
+
+        if self.tracing:
+            with open(self.trace_filename, 'a') as outfile:
+                outfile.write(', '.join(map(str, [time.time(), f])))
+
         g_is_fin = np.isfinite(g)
         if np.all(g_is_fin):
             self._previous_x = x  # store the last known good value
