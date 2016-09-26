@@ -43,13 +43,16 @@ class ObjectiveWrapper(object):
         if settings.tracing.trace:
             self.tracing = True
             self.trace_filename = settings.tracing.filename
+            self.start_time = time.time()
+            with open(self.trace_filename, 'a') as outfile:
+                outfile.write('time (s), objective')
 
     def __call__(self, x):
         f, g = self._objective(x)
 
         if self.tracing:
             with open(self.trace_filename, 'a') as outfile:
-                outfile.write(', '.join(map(str, [time.time(), f])))
+                outfile.write(', '.join(map(str, [time.time() - self.start_time, f])) + '\n')
 
         g_is_fin = np.isfinite(g)
         if np.all(g_is_fin):
