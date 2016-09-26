@@ -45,7 +45,7 @@ class ObjectiveWrapper(object):
             self.trace_filename = settings.tracing.filename
             self.start_time = time.time()
             with open(self.trace_filename, 'a') as outfile:
-                outfile.write('time (s), objective')
+                outfile.write('time (s), objective\n')
 
     def __call__(self, x):
         f, g = self._objective(x)
