@@ -40,6 +40,7 @@ class ObjectiveWrapper(object):
         self._objective = objective
         self._previous_x = None
 
+        self.tracing = False
         if settings.tracing.trace:
             self.tracing = True
             self.trace_filename = settings.tracing.filename
