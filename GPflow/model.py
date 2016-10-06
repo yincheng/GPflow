@@ -52,7 +52,7 @@ class ObjectiveWrapper(object):
 
         if self.tracing:
             with open(self.trace_filename, 'a') as outfile:
-                outfile.write(', '.join(map(str, [time.time() - self.start_time, f])) + '\n')
+                outfile.write(', '.join(map(str, [time.time() - self.start_time, float(f)])) + '\n')
 
         g_is_fin = np.isfinite(g)
         if np.all(g_is_fin):
