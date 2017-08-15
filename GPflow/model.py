@@ -192,7 +192,7 @@ class Model(Parameterized):
                               return_logprobs=return_logprobs, RNG=RNG)
 
     def optimize(self, method='L-BFGS-B', tol=None, callback=None,
-                 maxiter=1000, **kw):
+            callback_fast = None, maxiter=1000, **kw):
         """
         Optimize the model by maximizing the likelihood (possibly with the
         priors also) with respect to any free variables.
@@ -222,9 +222,9 @@ class Model(Parameterized):
         if type(method) is str:
             return self._optimize_np(method, tol, callback, maxiter, **kw)
         else:
-            return self._optimize_tf(method, callback, maxiter, **kw)
+            return self._optimize_tf(method, callback, callback_fast, maxiter, **kw)
 
-    def _optimize_tf(self, method, callback, maxiter):
+    def _optimize_tf(self, method, callback, callback_fast, maxiter):
         """
         Optimize the model using a tensorflow optimizer. See self.optimize()
         """
@@ -235,10 +235,12 @@ class Model(Parameterized):
             iteration = 0
             while iteration < maxiter:
                 self.update_feed_dict(self._feed_dict_keys, feed_dict)
-                self._session.run(opt_step, feed_dict=feed_dict)
+                _, obj_f = self._session.run([opt_step, self._minusF], feed_dict=feed_dict)
                 self.num_fevals += 1
                 if callback is not None:
                     callback(self._session.run(self._free_vars))
+                if callback_fast is not None:
+                    callback_fast(obj_f)
                 iteration += 1
         except KeyboardInterrupt:
             print("Caught KeyboardInterrupt, setting model\
