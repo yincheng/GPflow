@@ -259,6 +259,10 @@ class Model(Parameterized):
                            status="Finished iterations.")
         return r
 
+    def set_state_to_free_var(self):
+        self.set_state(self._session.run(self._free_vars))
+        return True
+
     def _optimize_np(self, method='L-BFGS-B', tol=None, callback=None,
                      maxiter=1000, **kw):
         """
